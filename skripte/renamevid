@@ -1,0 +1,56 @@
+#!/bin/bash
+export IFS=$'\n'
+for DATEI in $(ls -1 *${1}*)
+do
+	echo -e "Altername:\t $DATEI"
+	# Ueberfluessige Namensteile entfernen
+	DATEI_NEU=$(echo $DATEI | sed 's#\.xvid##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.deu##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.German##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.DVDRip##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.KHPP##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.DL##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.XviD\.#.#')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.eng##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.dTV##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#DL\.##')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.XviD-TvR##')
+
+	# Namensumbenennung
+	DATEI_NEU=$(echo $DATEI_NEU | sed -e s#${1}#${2}\ -\ #)
+
+	# Ueberfluessige Punkte und Unterstriche entfernen
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\.# #g')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#_# #g')
+
+	# Einheitliches Format von SxxExx
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\(S[0-9]\+\) \(E[0-9]\+\)#\1\2#g') 
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\([0-9]\+\) Staffel - Epi\([0-9]\+\)#S\1E\2#g')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#-[ ]\+-#- #')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#-[  ]\+#- #')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\([0-9]\+\)[xX]\([0-9]\+\)#s\1e\2#')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#s\([0-9]\+\)#S\1#')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#e\([0-9]\+\)#E\1#')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#S\([0-9]\)E#S0\1E#')
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#E\([0-9]\) #E0\1 #')
+
+
+	# Punkt fuer die Dateierweiterung wieder einfuegen
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#^\(.*\) \(...\)$#\1.\2#')
+
+	# Leerzeichen und - vor dem Folgenamen
+	DATEI_NEU=$(echo $DATEI_NEU | sed 's#\(E[0-9]\+\) \([^-\.]\)#\1 - \2#')
+	echo -e "Neuername:\t $DATEI_NEU"
+	if [[ "$3" = "mv" ]]
+	then
+		STAFFEL=$(echo $DATEI_NEU | sed 's#.*S\([0-9]\+\).*#\1#')
+		VERZEICHNIS="Staffel $STAFFEL"
+		if [[ -e $VERZEICHNIS ]]
+		then
+			mv -v $DATEI $VERZEICHNIS/$DATEI_NEU
+		else 
+			mkdir $VERZEICHNIS
+			mv -v $DATEI $VERZEICHNIS/$DATEI_NEU
+		fi
+	fi
+done
